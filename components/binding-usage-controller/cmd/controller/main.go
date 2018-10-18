@@ -25,7 +25,7 @@ import (
 
 // informerResyncPeriod defines how often informer will execute relist action. Setting to zero disable resync.
 // BEWARE: too short period time will increase the CPU load.
-const informerResyncPeriod = 30 * time.Minute
+const informerResyncPeriod = 20 * time.Minute
 
 // Config holds application configuration
 type Config struct {
