@@ -21,7 +21,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const maxPopulatorRetries = 10
+const maxPopulatorRetries = 100
 
 func main() {
 	verbose := flag.Bool("verbose", false, "specify if log verbosely loading configuration")
