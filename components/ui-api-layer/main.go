@@ -35,6 +35,7 @@ type config struct {
 	RemoteEnvironment    remoteenvironment.Config
 }
 
+// main function
 func main() {
 	cfg, err := loadConfig("APP")
 	exitOnError(err, "Error while loading app config")
