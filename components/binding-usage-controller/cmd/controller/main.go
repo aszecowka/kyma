@@ -23,7 +23,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// informerResyncPeriod defines how often informer will execute relist action. Setting to zero disable resync.
+// informerResyncPeriod defines how often the informer executes the relist action. Setting to `zero` disables the resync.
 // BEWARE: too short period time will increase the CPU load.
 const informerResyncPeriod = 20 * time.Minute
 
