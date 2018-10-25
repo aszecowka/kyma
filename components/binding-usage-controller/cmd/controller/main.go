@@ -24,7 +24,7 @@ import (
 )
 
 // informerResyncPeriod defines how often the informer executes the relist action. Setting to `zero` disables the resync.
-// BEWARE: too short period time will increase the CPU load.
+// NOTE: Too short period time increases the CPU load.
 const informerResyncPeriod = 20 * time.Minute
 
 // Config holds application configuration
