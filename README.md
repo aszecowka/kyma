@@ -2,6 +2,8 @@
  <img src="https://raw.githubusercontent.com/kyma-project/kyma/master/logo.png" width="235">
 </p>
 
+Release 0.5.1
+
 [![Go Report Card](https://goreportcard.com/badge/kyma-project/kyma)](https://goreportcard.com/report/github.com/kyma-project/kyma)
 
 ## Overview
