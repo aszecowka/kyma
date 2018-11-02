@@ -75,7 +75,7 @@ global:
     version: 60fd580b
   ui_api_layer_acceptance_tests:
     dir: develop/
-    version: 0.5.1
+    version: 0.5.1 
 
 test:
   acceptance:
