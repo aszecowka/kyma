@@ -2,6 +2,8 @@
 
 ## Overview
 
+Changes in UI api layer
+
 This project includes a server that exposes the GraphQL API for all Kyma UIs. It consumes the Kubernetes API using the K8S Go client.
 This document describes how to use the application and how to develop new features in this project.
 
