@@ -8,7 +8,7 @@ import (
 type apiConverter struct{}
 
 
-doesnotcompile
+doesnotcompile again
 
 
 func (ac *apiConverter) ToGQL(in *v1alpha2.Api) *gqlschema.API {
