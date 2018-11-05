@@ -7,6 +7,10 @@ import (
 
 type apiConverter struct{}
 
+
+doesnotcompile
+
+
 func (ac *apiConverter) ToGQL(in *v1alpha2.Api) *gqlschema.API {
 	if in == nil {
 		return nil
