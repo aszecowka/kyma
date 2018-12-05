@@ -3,6 +3,7 @@ package externalapi
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/model"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -48,8 +49,12 @@ func (mh *metadataHandler) CreateService(w http.ResponseWriter, r *http.Request)
 	}
 
 	responseBody := CreateServiceResponse{ID: serviceId}
-	respondWithBody(w, http.StatusOK, responseBody)
-
+	apperr = mh.respondWithBody(w, http.StatusOK, responseBody)
+	if apperr != nil {
+		contextLogger.Errorf("Creating service failed, %s", apperr.Error())
+		mh.handleErrors(w, apperr)
+		return
+	}
 	contextLogger.Infof("Service with ID %s created successfully.", serviceId)
 }
 
@@ -71,7 +76,12 @@ func (mh *metadataHandler) GetService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithBody(w, http.StatusOK, responseBody)
+	apperr = mh.respondWithBody(w, http.StatusOK, responseBody)
+	if apperr != nil {
+		contextLogger.Errorf("Getting service failed, %s", apperr.Error())
+		mh.handleErrors(w, apperr)
+		return
+	}
 	contextLogger.Info("Service read successfully.")
 }
 
@@ -91,7 +101,12 @@ func (mh *metadataHandler) GetServices(w http.ResponseWriter, r *http.Request) {
 		responseBody = append(responseBody, serviceDefinitionToService(element))
 	}
 
-	respondWithBody(w, http.StatusOK, responseBody)
+	apperr = mh.respondWithBody(w, http.StatusOK, responseBody)
+	if apperr != nil {
+		contextLogger.Errorf("Getting all services failed, %s", apperr.Error())
+		mh.handleErrors(w, apperr)
+		return
+	}
 	contextLogger.Info("Services read successfully.")
 }
 
@@ -106,8 +121,9 @@ func (mh *metadataHandler) UpdateService(w http.ResponseWriter, r *http.Request)
 		mh.handleErrors(w, apperr)
 		return
 	}
+	serviceDefinition.ID = vars["serviceId"]
 
-	svc, apperr := mh.ServiceDefinitionService.Update(vars["remoteEnvironment"], vars["serviceId"], &serviceDefinition)
+	svc, apperr := mh.ServiceDefinitionService.Update(vars["remoteEnvironment"], &serviceDefinition)
 	if apperr != nil {
 		contextLogger.Errorf("Updating service failed, %s", apperr.Error())
 		mh.handleErrors(w, apperr)
@@ -121,7 +137,12 @@ func (mh *metadataHandler) UpdateService(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	respondWithBody(w, http.StatusOK, responseBody)
+	apperr = mh.respondWithBody(w, http.StatusOK, responseBody)
+	if apperr != nil {
+		contextLogger.Errorf("Updating service failed, %s", apperr.Error())
+		mh.handleErrors(w, apperr)
+		return
+	}
 	contextLogger.Info("Service updated successfully.")
 }
 
@@ -142,22 +163,22 @@ func (mh *metadataHandler) DeleteService(w http.ResponseWriter, r *http.Request)
 	contextLogger.Infof("Service deleted successfully.")
 }
 
-func (mh *metadataHandler) prepareServiceDefinition(body io.ReadCloser) (metadata.ServiceDefinition, apperrors.AppError) {
+func (mh *metadataHandler) prepareServiceDefinition(body io.ReadCloser) (model.ServiceDefinition, apperrors.AppError) {
 	b, err := ioutil.ReadAll(body)
 	if err != nil {
-		return metadata.ServiceDefinition{}, apperrors.WrongInput("Failed to read request body, %s", err.Error())
+		return model.ServiceDefinition{}, apperrors.WrongInput("Failed to read request body, %s", err.Error())
 	}
 	defer body.Close()
 
 	var serviceDetails ServiceDetails
 	err = json.Unmarshal(b, &serviceDetails)
 	if err != nil {
-		return metadata.ServiceDefinition{}, apperrors.WrongInput("Failed to unmarshal request body, %s", err.Error())
+		return model.ServiceDefinition{}, apperrors.WrongInput("Failed to unmarshal request body, %s", err.Error())
 	}
 
 	appErr := mh.validator.Validate(serviceDetails)
 	if appErr != nil {
-		return metadata.ServiceDefinition{}, apperrors.WrongInput("Failed to validate request body, %s", appErr.Error())
+		return model.ServiceDefinition{}, apperrors.WrongInput("Failed to validate request body, %s", appErr.Error())
 	}
 
 	return serviceDetailsToServiceDefinition(serviceDetails)
@@ -175,9 +196,17 @@ func respond(w http.ResponseWriter, statusCode int) {
 	w.WriteHeader(statusCode)
 }
 
-func respondWithBody(w http.ResponseWriter, statusCode int, responseBody interface{}) {
+func (mh *metadataHandler) respondWithBody(w http.ResponseWriter, statusCode int, responseBody interface{}) apperrors.AppError {
+	var b bytes.Buffer
+
+	err := json.NewEncoder(&b).Encode(responseBody)
+	if err != nil {
+		return apperrors.Internal("Failed to marshall body, %s", err.Error())
+	}
+
 	respond(w, statusCode)
-	json.NewEncoder(w).Encode(responseBody)
+	w.Write(b.Bytes())
+	return nil
 }
 
 func compact(src []byte) []byte {

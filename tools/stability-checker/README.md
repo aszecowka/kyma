@@ -1,5 +1,7 @@
 # Stability Checker
 
+test
+
 ## Overview
 The purpose of the Stability Checker is to check if a cluster is stable. 
 To ensure the cluster's stability, install the Stability Checker in the cluster. 

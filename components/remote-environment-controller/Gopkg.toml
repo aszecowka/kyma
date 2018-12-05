@@ -237,7 +237,7 @@ version = "v2.10.0"
 
 [[constraint]]
   name = "github.com/kyma-project/kyma"
-  revision = "45705375b85f9218c139b6339063388f54953dcc"
+  revision = "4e1170ed9101dcbb98d450278a86c6ceecc1cb62"
 
 # For dependency below: Refer to issue https://github.com/golang/dep/issues/1799
 [[override]]

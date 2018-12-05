@@ -14,10 +14,11 @@ import (
 	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata"
 	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/accessservice"
 	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/istio"
-	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/minio"
 	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/remoteenv"
 	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/secrets"
 	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/serviceapi"
+	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/specification"
+	"github.com/kyma-project/kyma/components/metadata-service/internal/metadata/specification/minio"
 	metauuid "github.com/kyma-project/kyma/components/metadata-service/internal/metadata/uuid"
 	"github.com/kyma-project/kyma/components/metadata-service/internal/monitoring"
 	istioclient "github.com/kyma-project/kyma/components/metadata-service/pkg/client/clientset/versioned"
@@ -128,6 +129,8 @@ func newServiceDefinitionService(minioURL, namespace string, proxyPort int, name
 
 	minioService := minio.NewService(minioRepository)
 
+	specificationService := specification.NewSpecService(minioService)
+
 	remoteEnvironmentServiceRepository, apperror := newRemoteEnvironmentRepository(k8sConfig)
 	if apperror != nil {
 		return nil, apperror
@@ -139,15 +142,15 @@ func newServiceDefinitionService(minioURL, namespace string, proxyPort int, name
 	}
 
 	accessServiceManager := newAccessServiceManager(coreClientset, namespace, proxyPort)
-	secretsRepository := newSecretsRepository(coreClientset, namespace)
+	secretsService := newSecretsRepository(coreClientset, nameResolver, namespace)
 
 	uuidGenerator := metauuid.GeneratorFunc(func() string {
 		return uuid.NewV4().String()
 	})
 
-	serviceAPIService := serviceapi.NewService(nameResolver, accessServiceManager, secretsRepository, istioService)
+	serviceAPIService := serviceapi.NewService(nameResolver, accessServiceManager, secretsService, istioService)
 
-	return metadata.NewServiceDefinitionService(uuidGenerator, serviceAPIService, remoteEnvironmentServiceRepository, minioService), nil
+	return metadata.NewServiceDefinitionService(uuidGenerator, serviceAPIService, remoteEnvironmentServiceRepository, specificationService), nil
 }
 
 func newRemoteEnvironmentRepository(config *restclient.Config) (remoteenv.ServiceRepository, apperrors.AppError) {
@@ -171,10 +174,11 @@ func newAccessServiceManager(coreClientset *kubernetes.Clientset, namespace stri
 	return accessservice.NewAccessServiceManager(si, config)
 }
 
-func newSecretsRepository(coreClientset *kubernetes.Clientset, namespace string) secrets.Repository {
+func newSecretsRepository(coreClientset *kubernetes.Clientset, nameResolver k8sconsts.NameResolver, namespace string) secrets.Service {
 	sei := coreClientset.CoreV1().Secrets(namespace)
+	repository := secrets.NewRepository(sei)
 
-	return secrets.NewRepository(sei)
+	return secrets.NewService(repository, nameResolver)
 }
 
 func newIstioService(config *restclient.Config, namespace string) (istio.Service, apperrors.AppError) {

@@ -33,12 +33,19 @@ data:
   global.domainName: "kyma.local"
   global.etcdBackup.containerName: ""
   global.etcdBackup.enabled: "false"
-  global.alertTools.credentials.slack.apiurl: ""
-  global.alertTools.credentials.slack.channel: ""
-  global.alertTools.credentials.victorOps.routingkey: ""
-  global.alertTools.credentials.victorOps.apikey: ""
   nginx-ingress.controller.service.loadBalancerIP: ""
   cluster-users.users.adminGroup: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: connector-service-overrides
+  namespace: kyma-installer
+  labels:
+    installer: overrides
+    component: application-connector
+data:
+  connector-service.tests.skipSslVerify: "true"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -52,30 +59,6 @@ data:
   console.cluster.headerLogoUrl: "assets/logo.svg"
   console.cluster.headerTitle: ""
   console.cluster.faviconUrl: "favicon.ico"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ec-default-overrides
-  namespace: kyma-installer
-  labels:
-    installer: overrides
-    component: ec-default
-data:
-  deployment.args.sourceType: commerce
-  service.externalapi.nodePort: "32001"
----  
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: hmc-default-overrides
-  namespace: kyma-installer
-  labels:
-    installer: overrides
-    component: hmc-default
-data:
-  deployment.args.sourceType: marketing
-  service.externalapi.nodePort: "32000"
 ---
 apiVersion: v1
 kind: ConfigMap

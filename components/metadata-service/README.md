@@ -44,10 +44,10 @@ To get the NodePort, run this command:
 kubectl -n kyma-system get svc application-connector-nginx-ingress-controller -o 'jsonpath={.spec.ports[?(@.port==443)].nodePort}'
 ```
 
-- Create a new service 
+- Create a new service
 
 ```sh
-curl -X POST https://gateway.kyma.local:{NODE_PORT}/ec-default/v1/metadata/services --cert ec-default.crt --key ec-default.key -k \
+curl -X POST https://gateway.kyma.local:{NODE_PORT}/{RE_NAME}/v1/metadata/services --cert {CER_NAME}.crt --key {CERT_KEY}.key -k \
   -d '{"name": "Some EC",
   "provider": "kyma",
   "description": "This is some EC!",
@@ -88,7 +88,7 @@ curl -X POST https://gateway.kyma.local:{NODE_PORT}/ec-default/v1/metadata/servi
 - Fetch all services
 
 ```
-curl https://gateway.kyma.local:{NODE_PORT}/ec-default/v1/metadata/services --cert ec-default.crt --key ec-default.key -k
+curl https://gateway.kyma.local:{NODE_PORT}/{RE_NAME}/v1/metadata/services --cert {CERT_NAME}.crt --key {KEY_NAME}.key -k
 ```
 
 ## Development
@@ -97,7 +97,7 @@ This section explains the development process.
 
 ### Rapid development with Telepresence
 
-The Metadata Service stores its state in the Kubernetes Custom Resource, therefore it's dependent on Kubernetes. You cannot mock the dependency. You cannot develop locally. Manual deployment on every change is a mundane task.
+The Metadata Service stores its state in the Kubernetes custom resource, therefore it's dependent on Kubernetes. You cannot mock the dependency. You cannot develop locally. Manual deployment on every change is a mundane task.
 
 You can, however, leverage [Telepresence](https://www.telepresence.io/). This works by replacing a container in a specified Pod, opening up a new local shell or a pre-configured bash, and proxying the network traffic from the local shell through the Pod.
 
@@ -130,11 +130,20 @@ To generate a mock, follow these steps:
 mockery -name=Sender
 ```
 
-### Tests
+## Tests
 
 This section outlines the testing details.
 
-#### Unit tests
+### Run tests locally
+
+When you develop the Application Connector components, you can test the changes you introduced on a local Kyma deployment before you push them to a production cluster.
+To test the component you modified, run the `run-with-local-tests.sh` script located in the `scripts` directory.
+
+Running the script builds the Docker image of the component, pushes it to the Minikube registry, and updates the component deployment in the Minikube cluster. It then triggers the `run-local-tests.sh` script, which builds the image of the acceptance tests to the Minikube registry, creates a Pod with the tests, and fetches the logs from that Pod.
+
+Alternatively, you can run only the `run-local-tests.sh` script for the given component to build the image of the component's acceptance tests to the Minikube registry, create a Pod with the tests, and fetch the logs from that Pod.
+
+### Unit tests
 
 To run the unit tests, use the following command:
 
@@ -142,7 +151,7 @@ To run the unit tests, use the following command:
 go test ./...
 ```
 
-### Generate Kubernetes clients for custom resources
+## Generate Kubernetes clients for custom resources
 
 1. Create a directory structure for each client, similar to the one in `pkg/apis`. For example, when generating a client for EgressRule in Istio, the directory structure looks like this: `pkg/apis/istio/v1alpha2`.
 2. After creating the directories, define the following files:
@@ -154,6 +163,6 @@ See an example in `pkg/apis/istio/v1alpha2`.
 
 3. Go to the project root directory and run `./hack/update-codegen.sh`. The script generates a new client in `pkg/apis/client/clientset`.
 
-### Contribution
+## Contribution
 
 To learn how you can contribute to this project, see the [Contributing](/CONTRIBUTING.md) document.

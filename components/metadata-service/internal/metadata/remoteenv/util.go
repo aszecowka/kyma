@@ -20,11 +20,16 @@ func convertFromK8sType(service v1alpha1.Service) (Service, apperrors.AppError) 
 		for _, entry := range service.Entries {
 			if entry.Type == specAPIType {
 				api = &ServiceAPI{
-					GatewayURL:            entry.GatewayUrl,
-					AccessLabel:           entry.AccessLabel,
-					TargetUrl:             entry.TargetUrl,
-					OauthUrl:              entry.OauthUrl,
-					CredentialsSecretName: entry.CredentialsSecretName,
+					GatewayURL:       entry.GatewayUrl,
+					AccessLabel:      entry.AccessLabel,
+					TargetUrl:        entry.TargetUrl,
+					SpecificationUrl: entry.SpecificationUrl,
+					ApiType:          entry.ApiType,
+					Credentials: Credentials{
+						AuthenticationUrl: entry.Credentials.AuthenticationUrl,
+						SecretName:        entry.Credentials.SecretName,
+						Type:              entry.Credentials.Type,
+					},
 				}
 			} else if entry.Type == specEventsType {
 				events = true
@@ -54,12 +59,17 @@ func convertToK8sType(service Service) v1alpha1.Service {
 	var serviceEntries = make([]v1alpha1.Entry, 0, 2)
 	if service.API != nil {
 		apiEntry := v1alpha1.Entry{
-			Type:                  specAPIType,
-			GatewayUrl:            service.API.GatewayURL,
-			AccessLabel:           service.API.AccessLabel,
-			TargetUrl:             service.API.TargetUrl,
-			OauthUrl:              service.API.OauthUrl,
-			CredentialsSecretName: service.API.CredentialsSecretName,
+			Type:             specAPIType,
+			GatewayUrl:       service.API.GatewayURL,
+			AccessLabel:      service.API.AccessLabel,
+			TargetUrl:        service.API.TargetUrl,
+			SpecificationUrl: service.API.SpecificationUrl,
+			ApiType:          service.API.ApiType,
+			Credentials: v1alpha1.Credentials{
+				AuthenticationUrl: service.API.Credentials.AuthenticationUrl,
+				SecretName:        service.API.Credentials.SecretName,
+				Type:              service.API.Credentials.Type,
+			},
 		}
 		serviceEntries = append(serviceEntries, apiEntry)
 	}
