@@ -3,6 +3,7 @@
 </p>
 
 some change on branch 1
+some change on pr to branch 3
 
 [![Go Report Card](https://goreportcard.com/badge/kyma-project/kyma)](https://goreportcard.com/report/github.com/kyma-project/kyma)
 
