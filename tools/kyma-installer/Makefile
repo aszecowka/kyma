@@ -23,8 +23,6 @@ ci-release: build-image push-image
 # This variable is provided by Prow and files stored there are automatically uploaded to GCS.
 .PHONY: ci-create-release-artifacts
 ci-create-release-artifacts:
-	echo $(DOCKER_PATH)
-	echo $(TAG)
 	cd ./../..; \
 	docker run --rm --volume $(CURDIR)/../..:/kyma  \
 		--volume $(ARTIFACTS):$(ARTIFACTS) \
